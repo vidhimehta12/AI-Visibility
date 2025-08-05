@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Visibility Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/@salesforce-ux/design-system/assets/styles/salesforce-lightning-design-system.min.css" />
+    <style>
+        .slds-scope {
+            background-color: var(--slds-g-color-neutral-base-95);
+            min-height: 100vh;
+        }
+        
+        .slds-metric {
+            background-color: var(--slds-g-color-neutral-base-100);
+            border: 1px solid var(--slds-g-color-neutral-base-95);
+            border-radius: var(--slds-border-radius-medium);
+            padding: var(--slds-spacing-medium);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            height: 100%;
+        }
+        
+        .slds-metric__figure {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--slds-spacing-small);
+        }
+        
+        .slds-metric__figure-value {
+            margin-left: var(--slds-spacing-small);
+        }
+        
+        .slds-metric__body {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .slds-metric__title {
+            font-size: var(--slds-font-size-3);
+            font-weight: var(--slds-font-weight-regular);
+            color: var(--slds-g-color-neutral-base-50);
+            text-transform: uppercase;
+            letter-spacing: 0.0625rem;
+            margin-bottom: var(--slds-spacing-xx-small);
+        }
+        
+        .slds-metric__subtitle {
+            font-size: var(--slds-font-size-2);
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Responsive enhancements for metrics */
+        @media (max-width: 768px) {
+            .slds-metric__figure {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+            
+            .slds-metric__figure-value {
+                margin-left: 0;
+                margin-top: var(--slds-spacing-x-small);
+            }
+            
+            .slds-metric {
+                padding: var(--slds-spacing-small);
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .slds-metric__figure {
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .slds-metric__body {
+                align-items: center;
+                text-align: center;
+            }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .sentiment-progress {
+            height: 0.5rem;
+            border-radius: var(--slds-border-radius-pill);
+            background-color: var(--slds-g-color-neutral-base-80);
+            overflow: hidden;
+        }
+        
+        .sentiment-progress-positive {
+            width: 80%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--slds-g-color-success-base-50) 0%, var(--slds-g-color-success-base-60) 100%);
+            border-radius: var(--slds-border-radius-pill);
+        }
+    </style>
+</head>
+<body class="slds-scope">
+    <!-- Page Header -->
+    <div class="slds-page-header slds-page-header_record-home">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+                        <span class="slds-icon_container slds-icon-standard-opportunity">
+                            <svg class="slds-icon slds-page-header__icon" aria-hidden="true">
+                                <use xlink:href="/assets/icons/standard-sprite/svg/symbols.svg#opportunity"></use>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title slds-truncate">AI Visibility Dashboard</span>
+                                </h1>
+                            </div>
+                        </div>
+                        <p class="slds-page-header__name-meta">Monitor your brand's AI visibility and performance</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <button class="slds-button slds-button_brand">
+                            <svg class="slds-button__icon slds-button__icon_left" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#refresh"></use>
+                            </svg>
+                            Refresh Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="slds-p-around_large">
+        <!-- Key Metrics Row -->
+        <div class="slds-grid slds-gutters slds-wrap slds-m-bottom_large">
+            <!-- AI Visibility Score -->
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                <div class="slds-metric slds-metric_has-icon slds-has-bottom-magnet" role="region" aria-labelledby="metric-visibility-title" aria-describedby="metric-visibility-trend">
+                    <div class="slds-metric__figure">
+                        <span class="slds-icon_container slds-icon-utility-visibility slds-current-color" title="Visibility Score">
+                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#visibility"></use>
+                            </svg>
+                        </span>
+                        <span class="slds-metric__figure-value" style="font-size: 3rem; font-weight: var(--slds-font-weight-bold); color: var(--slds-g-color-brand-base-50);" aria-label="85 percent">85%</span>
+                    </div>
+                    <div class="slds-metric__body">
+                        <span class="slds-metric__title" id="metric-visibility-title">AI Visibility Score</span>
+                        <span class="slds-metric__subtitle slds-text-color_success" id="metric-visibility-trend" aria-label="Increased by 5 percent from last month">
+                            <svg class="slds-icon slds-icon_xx-small slds-icon-text-success slds-m-right_xx-small" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#trending"></use>
+                            </svg>
+                            +5% from last month
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Mentions -->
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                <div class="slds-metric slds-metric_has-icon slds-has-bottom-magnet" role="region" aria-labelledby="metric-mentions-title" aria-describedby="metric-mentions-trend">
+                    <div class="slds-metric__figure">
+                        <span class="slds-icon_container slds-icon-utility-comments slds-current-color" title="Total Mentions">
+                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#comments"></use>
+                            </svg>
+                        </span>
+                        <span class="slds-metric__figure-value slds-text-heading_large" aria-label="2,847 mentions">2,847</span>
+                    </div>
+                    <div class="slds-metric__body">
+                        <span class="slds-metric__title" id="metric-mentions-title">Total Mentions</span>
+                        <span class="slds-metric__subtitle slds-text-color_success" id="metric-mentions-trend" aria-label="Increased by 12 percent from last month">
+                            <svg class="slds-icon slds-icon_xx-small slds-icon-text-success slds-m-right_xx-small" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#trending"></use>
+                            </svg>
+                            +12% from last month
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Response Rate -->
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                <div class="slds-metric slds-metric_has-icon slds-has-bottom-magnet" role="region" aria-labelledby="metric-response-title" aria-describedby="metric-response-trend">
+                    <div class="slds-metric__figure">
+                        <span class="slds-icon_container slds-icon-utility-percent slds-current-color" title="Response Rate">
+                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#percent"></use>
+                            </svg>
+                        </span>
+                        <span class="slds-metric__figure-value slds-text-heading_large" aria-label="67 percent">67%</span>
+                    </div>
+                    <div class="slds-metric__body">
+                        <span class="slds-metric__title" id="metric-response-title">Response Rate</span>
+                        <span class="slds-metric__subtitle slds-text-color_error" id="metric-response-trend" aria-label="Decreased by 3 percent from last month">
+                            <svg class="slds-icon slds-icon_xx-small slds-icon-text-error slds-m-right_xx-small" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#trending_down"></use>
+                            </svg>
+                            -3% from last month
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sentiment Score -->
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                <div class="slds-metric slds-metric_has-icon slds-has-bottom-magnet" role="region" aria-labelledby="metric-sentiment-title" aria-describedby="metric-sentiment-trend">
+                    <div class="slds-metric__figure">
+                        <span class="slds-icon_container slds-icon-utility-sentiment_neutral slds-current-color" title="Sentiment Score">
+                            <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#sentiment_neutral"></use>
+                            </svg>
+                        </span>
+                        <span class="slds-metric__figure-value slds-text-heading_large slds-text-color_success" aria-label="4.2 out of 5">4.2/5</span>
+                    </div>
+                    <div class="slds-metric__body">
+                        <span class="slds-metric__title" id="metric-sentiment-title">Sentiment Score</span>
+                        <span class="slds-metric__subtitle slds-text-color_success" id="metric-sentiment-trend" aria-label="Showing positive trend">
+                            <svg class="slds-icon slds-icon_xx-small slds-icon-text-success slds-m-right_xx-small" aria-hidden="true">
+                                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#trending"></use>
+                            </svg>
+                            Positive trend
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary Content Row -->
+        <div class="slds-grid slds-gutters slds-wrap">
+            <!-- Competitors Ranking -->
+            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
+                <article class="slds-card">
+                    <div class="slds-card__header slds-grid">
+                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                            <div class="slds-media__figure">
+                                <span class="slds-icon_container slds-icon-standard-opportunity">
+                                    <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#trending"></use>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-card__header-title">
+                                    Competitors by Visibility Score
+                                </h2>
+                            </div>
+                        </header>
+                    </div>
+                    <div class="slds-card__body slds-card__body_inner">
+                        <ul class="slds-list_vertical slds-has-dividers_around-space">
+                            <li class="slds-list__item slds-p-vertical_small">
+                                <div class="slds-media slds-media_center">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-text-heading_small slds-text-color_weak" style="min-width: 2rem; display: inline-block;">#1</span>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-body_regular">The Style Room</p>
+                                        <p class="slds-text-body_small slds-text-color_weak">85% visibility</p>
+                                    </div>
+                                    <div class="slds-media__figure slds-media__figure_reverse">
+                                        <span class="slds-badge slds-badge_success">You</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="slds-list__item slds-p-vertical_small">
+                                <div class="slds-media slds-media_center">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-text-heading_small slds-text-color_weak" style="min-width: 2rem; display: inline-block;">#2</span>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-body_regular">Chic & Co.</p>
+                                        <p class="slds-text-body_small slds-text-color_weak">83% visibility</p>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="slds-list__item slds-p-vertical_small">
+                                <div class="slds-media slds-media_center">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-text-heading_small slds-text-color_weak" style="min-width: 2rem; display: inline-block;">#3</span>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-body_regular">Urban Threads</p>
+                                        <p class="slds-text-body_small slds-text-color_weak">83% visibility</p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Top Referenced Sources -->
+            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
+                <article class="slds-card">
+                    <div class="slds-card__header slds-grid">
+                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                            <div class="slds-media__figure">
+                                <span class="slds-icon_container slds-icon-standard-link">
+                                    <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#link"></use>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-card__header-title">
+                                    Top Referenced Sources
+                                </h2>
+                            </div>
+                        </header>
+                    </div>
+                    <div class="slds-card__body slds-card__body_inner">
+                        <ul class="slds-list_vertical slds-has-dividers_around-space">
+                            <li class="slds-list__item slds-p-vertical_small">
+                                <div class="slds-media slds-media_center">
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-body_regular">thestyleroom.com</p>
+                                        <p class="slds-text-body_small slds-text-color_weak">Your website</p>
+                                    </div>
+                                    <div class="slds-media__figure slds-media__figure_reverse">
+                                        <span class="slds-badge slds-badge_success">4 refs</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="slds-list__item slds-p-vertical_small">
+                                <div class="slds-media slds-media_center">
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-body_regular">chicandco.com</p>
+                                        <p class="slds-text-body_small slds-text-color_weak">Competitor site</p>
+                                    </div>
+                                    <div class="slds-media__figure slds-media__figure_reverse">
+                                        <span class="slds-badge">3 refs</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="slds-list__item slds-p-vertical_small">
+                                <div class="slds-media slds-media_center">
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-body_regular">vogue.com</p>
+                                        <p class="slds-text-body_small slds-text-color_weak">Fashion magazine</p>
+                                    </div>
+                                    <div class="slds-media__figure slds-media__figure_reverse">
+                                        <span class="slds-badge">2 refs</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Top Pages -->
+            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
+                <article class="slds-card">
+                    <div class="slds-card__header slds-grid">
+                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                            <div class="slds-media__figure">
+                                <span class="slds-icon_container slds-icon-standard-article">
+                                    <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#page"></use>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-card__header-title">
+                                    Top Performing Pages
+                                </h2>
+                            </div>
+                        </header>
+                    </div>
+                    <div class="slds-card__body slds-card__body_inner">
+                        <ul class="slds-list_vertical slds-has-dividers_around-space">
+                            <li class="slds-list__item slds-p-vertical_small">
+                                <div class="slds-border_left slds-border_brand slds-p-left_small">
+                                    <p class="slds-text-body_regular slds-truncate">/dresses/summer-collection</p>
+                                    <p class="slds-text-body_small slds-text-color_weak">120 AI mentions</p>
+                                </div>
+                            </li>
+                            <li class="slds-list__item slds-p-vertical_small">
+                                <div class="slds-border_left slds-border_brand slds-p-left_small">
+                                    <p class="slds-text-body_regular slds-truncate">/about-us</p>
+                                    <p class="slds-text-body_small slds-text-color_weak">98 AI mentions</p>
+                                </div>
+                            </li>
+                            <li class="slds-list__item slds-p-vertical_small">
+                                <div class="slds-border_left slds-border_brand slds-p-left_small">
+                                    <p class="slds-text-body_regular slds-truncate">/brands/sustainable-edit</p>
+                                    <p class="slds-text-body_small slds-text-color_weak">75 AI mentions</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- Full Width Sections -->
+        <div class="slds-grid slds-gutters slds-wrap slds-m-top_large">
+            <!-- Site Mentions -->
+            <div class="slds-col slds-size_1-of-1 slds-large-size_2-of-3">
+                <article class="slds-card">
+                    <div class="slds-card__header slds-grid">
+                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                            <div class="slds-media__figure">
+                                <span class="slds-icon_container slds-icon-standard-insights">
+                                    <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#comments"></use>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-card__header-title">Site Mentions Analysis</h2>
+                                <p class="slds-card__header-subtitle">Track how AI systems reference your business</p>
+                            </div>
+                        </header>
+                        <div class="slds-no-flex">
+                            <button class="slds-button slds-button_neutral">
+                                <svg class="slds-button__icon slds-button__icon_left" aria-hidden="true">
+                                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#settings"></use>
+                                </svg>
+                                Manage Questions
+                            </button>
+                        </div>
+                    </div>
+                    <div class="slds-card__body slds-card__body_inner">
+                        <ul class="slds-list_vertical slds-has-dividers_around-space">
+                            <li class="slds-list__item slds-p-vertical_medium">
+                                <div class="slds-media">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-icon_container" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--slds-g-color-success-base-50); display: inline-block; margin-right: var(--slds-spacing-x-small);"></span>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-body_regular">Where can I find unique summer dresses in Austin?</p>
+                                        <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">Mentioned in 8/10 AI responses</p>
+                                    </div>
+                                    <div class="slds-media__figure slds-media__figure_reverse">
+                                        <span class="slds-badge slds-badge_success">Mentioned</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="slds-list__item slds-p-vertical_medium">
+                                <div class="slds-media">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-icon_container" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--slds-g-color-success-base-50); display: inline-block; margin-right: var(--slds-spacing-x-small);"></span>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-body_regular">Which boutiques in Austin have sustainable clothing brands?</p>
+                                        <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">Mentioned in 7/10 AI responses</p>
+                                    </div>
+                                    <div class="slds-media__figure slds-media__figure_reverse">
+                                        <span class="slds-badge slds-badge_success">Mentioned</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="slds-list__item slds-p-vertical_medium">
+                                <div class="slds-media">
+                                    <div class="slds-media__figure">
+                                        <span class="slds-icon_container" style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--slds-g-color-error-base-50); display: inline-block; margin-right: var(--slds-spacing-x-small);"></span>
+                                    </div>
+                                    <div class="slds-media__body">
+                                        <p class="slds-text-body_regular">Are there any local shops with good formal wear for weddings?</p>
+                                        <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">Mentioned in 2/10 AI responses</p>
+                                    </div>
+                                    <div class="slds-media__figure slds-media__figure_reverse">
+                                        <span class="slds-badge slds-badge_error">Low Mention</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Brand Sentiment -->
+            <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
+                <article class="slds-card">
+                    <div class="slds-card__header slds-grid">
+                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                            <div class="slds-media__figure">
+                                <span class="slds-icon_container slds-icon-standard-feedback">
+                                    <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#sentiment_neutral"></use>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-card__header-title">Brand Sentiment</h2>
+                            </div>
+                        </header>
+                    </div>
+                    <div class="slds-card__body slds-card__body_inner">
+                        <div class="slds-box slds-box_x-small slds-theme_shade slds-m-bottom_medium">
+                            <p class="slds-text-body_small">"The Style Room is a chic boutique in Austin known for its curated collection of unique and sustainable clothing brands. It offers a personal styling service, though its price point is higher than average."</p>
+                        </div>
+                        
+                        <div class="slds-m-bottom_medium">
+                            <h3 class="slds-text-heading_small slds-m-bottom_small">
+                                Overall Sentiment: 
+                                <span class="slds-text-color_success slds-text-title_caps">Positive</span>
+                            </h3>
+                            <div class="sentiment-progress">
+                                <div class="sentiment-progress-positive"></div>
+                            </div>
+                            <p class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">80% positive mentions</p>
+                        </div>
+                        
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col">
+                                <h4 class="slds-text-heading_x-small slds-text-color_success slds-m-bottom_x-small">Strengths</h4>
+                                <ul class="slds-list_dotted">
+                                    <li class="slds-text-body_small">Curated collection</li>
+                                    <li class="slds-text-body_small">Personal styling service</li>
+                                    <li class="slds-text-body_small">Sustainable brands</li>
+                                </ul>
+                            </div>
+                            <div class="slds-col">
+                                <h4 class="slds-text-heading_x-small slds-text-color_error slds-m-bottom_x-small">Areas for Improvement</h4>
+                                <ul class="slds-list_dotted">
+                                    <li class="slds-text-body_small">Limited size range</li>
+                                    <li class="slds-text-body_small">Higher price point</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="slds-grid slds-gutters slds-wrap slds-m-top_large">
+            <div class="slds-col slds-size_1-of-1">
+                <article class="slds-card">
+                    <div class="slds-card__header slds-grid">
+                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                            <div class="slds-media__figure">
+                                <span class="slds-icon_container slds-icon-standard-dashboard">
+                                    <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                        <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#chart"></use>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-card__header-title">AI Query Trends</h2>
+                                <p class="slds-card__header-subtitle">Track user queries mentioning your brand over time</p>
+                            </div>
+                        </header>
+                        <div class="slds-no-flex">
+                            <div class="slds-form-element">
+                                <div class="slds-form-element__control">
+                                    <div class="slds-select_container">
+                                        <select class="slds-select" id="timeRange">
+                                            <option>Last 6 months</option>
+                                            <option>Last year</option>
+                                            <option>All time</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-card__body slds-card__body_inner">
+                        <!-- Chart Legend -->
+                        <div class="slds-grid slds-gutters slds-wrap slds-m-bottom_medium">
+                            <div class="slds-col slds-size_1-of-1">
+                                <div class="slds-grid slds-grid_align-center">
+                                    <div class="slds-grid slds-gutters_small">
+                                        <div class="slds-col">
+                                            <div class="slds-media slds-media_small">
+                                                <div class="slds-media__figure">
+                                                    <span class="slds-icon_container" style="width: 12px; height: 12px; background-color: #1B96FF; border-radius: 50%;"></span>
+                                                </div>
+                                                <div class="slds-media__body">
+                                                    <span class="slds-text-body_small">Total Mentions</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-col">
+                                            <div class="slds-media slds-media_small">
+                                                <div class="slds-media__figure">
+                                                    <span class="slds-icon_container" style="width: 12px; height: 12px; background-color: #4A90F2; border-radius: 50%;"></span>
+                                                </div>
+                                                <div class="slds-media__body">
+                                                    <span class="slds-text-body_small">Positive Mentions</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chart Container -->
+                        <div class="chart-container" role="img" aria-label="AI Query Trends Line Chart showing mentions over time" tabindex="0">
+                            <canvas id="trafficChart" width="600" height="300"></canvas>
+                        </div>
+                        
+                        <!-- Accessible Data Table -->
+                        <div class="slds-m-top_medium">
+                            <button class="slds-button slds-button_neutral slds-button_small" onclick="toggleDataTable()" aria-expanded="false" aria-controls="chartDataTable">
+                                <svg class="slds-button__icon slds-button__icon_left" aria-hidden="true">
+                                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#table"></use>
+                                </svg>
+                                View Data Table
+                            </button>
+                            <div id="chartDataTable" class="slds-table_container slds-m-top_small" style="display: none;">
+                                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped" role="table">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th class="slds-text-title_caps" scope="col">Month</th>
+                                            <th class="slds-text-title_caps" scope="col">Total Mentions</th>
+                                            <th class="slds-text-title_caps" scope="col">Positive Mentions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="slds-hint-parent">
+                                            <td scope="row">January</td>
+                                            <td>420</td>
+                                            <td>320</td>
+                                        </tr>
+                                        <tr class="slds-hint-parent">
+                                            <td scope="row">February</td>
+                                            <td>550</td>
+                                            <td>420</td>
+                                        </tr>
+                                        <tr class="slds-hint-parent">
+                                            <td scope="row">March</td>
+                                            <td>380</td>
+                                            <td>290</td>
+                                        </tr>
+                                        <tr class="slds-hint-parent">
+                                            <td scope="row">April</td>
+                                            <td>680</td>
+                                            <td>520</td>
+                                        </tr>
+                                        <tr class="slds-hint-parent">
+                                            <td scope="row">May</td>
+                                            <td>560</td>
+                                            <td>430</td>
+                                        </tr>
+                                        <tr class="slds-hint-parent">
+                                            <td scope="row">June</td>
+                                            <td>720</td>
+                                            <td>580</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // SLDS Design Tokens for Charts
+        const sldsColors = {
+            brand: '#1B96FF',
+            brandDark: '#0176D3',
+            brandLight: '#4A90F2',
+            success: '#4bca81',
+            warning: '#FFB75D',
+            error: '#C23934',
+            neutral: {
+                base10: '#f3f2f2',
+                base30: '#dddbda',
+                base50: '#706e6b',
+                base70: '#514f4d',
+                base90: '#181818'
+            },
+            background: '#ffffff',
+            text: '#080707'
+        };
+
+        // Data Table Toggle Function
+        function toggleDataTable() {
+            const table = document.getElementById('chartDataTable');
+            const button = event.target.closest('button');
+            const isExpanded = table.style.display !== 'none';
+            
+            table.style.display = isExpanded ? 'none' : 'block';
+            button.setAttribute('aria-expanded', !isExpanded);
+            button.innerHTML = isExpanded ? 
+                '<svg class="slds-button__icon slds-button__icon_left" aria-hidden="true"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#table"></use></svg>View Data Table' :
+                '<svg class="slds-button__icon slds-button__icon_left" aria-hidden="true"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#table"></use></svg>Hide Data Table';
+        }
+
+        // Chart configuration with SLDS design tokens
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        const trafficChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                datasets: [
+                    {
+                        label: 'Total Mentions',
+                        data: [420, 550, 380, 680, 560, 720],
+                        borderColor: sldsColors.brand,
+                        backgroundColor: sldsColors.brand + '1A', // 10% opacity
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: sldsColors.brand,
+                        pointBorderColor: sldsColors.background,
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointHoverBorderWidth: 3
+                    },
+                    {
+                        label: 'Positive Mentions',
+                        data: [320, 420, 290, 520, 430, 580],
+                        borderColor: sldsColors.brandLight,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.3,
+                        pointBackgroundColor: sldsColors.brandLight,
+                        pointBorderColor: sldsColors.background,
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointHoverBorderWidth: 3,
+                        borderDash: [5, 5]
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                accessibility: {
+                    enabled: true
+                },
+                plugins: {
+                    legend: {
+                        display: false // Using custom SLDS legend instead
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: sldsColors.neutral.base90,
+                        titleColor: sldsColors.background,
+                        bodyColor: sldsColors.background,
+                        borderColor: sldsColors.neutral.base70,
+                        borderWidth: 1,
+                        cornerRadius: 4,
+                        displayColors: true,
+                        titleFont: {
+                            size: 14,
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 12
+                        },
+                        padding: 12,
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label;
+                            },
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {
+                            display: true,
+                            color: sldsColors.neutral.base10,
+                            lineWidth: 1
+                        },
+                        ticks: {
+                            color: sldsColors.neutral.base50,
+                            font: {
+                                size: 12
+                            },
+                            maxRotation: 0
+                        },
+                        border: {
+                            color: sldsColors.neutral.base30,
+                            width: 1
+                        }
+                    },
+                    y: {
+                        display: true,
+                        beginAtZero: true,
+                        grid: {
+                            display: true,
+                            color: sldsColors.neutral.base10,
+                            lineWidth: 1
+                        },
+                        ticks: {
+                            color: sldsColors.neutral.base50,
+                            font: {
+                                size: 12
+                            },
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        },
+                        border: {
+                            color: sldsColors.neutral.base30,
+                            width: 1
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                elements: {
+                    line: {
+                        tension: 0.3
+                    },
+                    point: {
+                        hoverBackgroundColor: sldsColors.background,
+                        hoverBorderWidth: 3
+                    }
+                }
+            }
+        });
+
+        // Chart Data for different time ranges
+        const chartData = {
+            'Last 6 months': {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                totalMentions: [420, 550, 380, 680, 560, 720],
+                positiveMentions: [320, 420, 290, 520, 430, 580]
+            },
+            'Last year': {
+                labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 'Q1 2024', 'Q2 2024'],
+                totalMentions: [1250, 1680, 1420, 1890, 1650, 1980],
+                positiveMentions: [980, 1290, 1100, 1450, 1280, 1540]
+            },
+            'All time': {
+                labels: ['2021', '2022', '2023', '2024 YTD'],
+                totalMentions: [2400, 4200, 6800, 3630],
+                positiveMentions: [1800, 3200, 5200, 2820]
+            }
+        };
+
+        // Function to update chart data
+        function updateChartData(timeRange) {
+            const data = chartData[timeRange];
+            if (!data) return;
+
+            // Update chart data
+            trafficChart.data.labels = data.labels;
+            trafficChart.data.datasets[0].data = data.totalMentions;
+            trafficChart.data.datasets[1].data = data.positiveMentions;
+            
+            // Update chart with animation
+            trafficChart.update('active');
+            
+            // Update data table
+            updateDataTable(data);
+        }
+
+        // Function to update data table
+        function updateDataTable(data) {
+            const tableBody = document.querySelector('#chartDataTable tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            data.labels.forEach((label, index) => {
+                const row = document.createElement('tr');
+                row.className = 'slds-hint-parent';
+                row.innerHTML = `
+                    <td scope="row">${label}</td>
+                    <td>${data.totalMentions[index].toLocaleString()}</td>
+                    <td>${data.positiveMentions[index].toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Time Range Selector with visual feedback
+        document.getElementById('timeRange').addEventListener('change', function(e) {
+            const selectedRange = e.target.value;
+            
+            // Add loading state
+            const chartContainer = document.querySelector('.chart-container');
+            chartContainer.style.opacity = '0.6';
+            chartContainer.style.pointerEvents = 'none';
+            
+            // Simulate data loading delay for better UX
+            setTimeout(() => {
+                updateChartData(selectedRange);
+                
+                // Remove loading state
+                chartContainer.style.opacity = '1';
+                chartContainer.style.pointerEvents = 'auto';
+                
+                // Update URL or localStorage to persist selection
+                localStorage.setItem('selectedTimeRange', selectedRange);
+                
+                console.log('Chart updated for time range:', selectedRange);
+            }, 300);
+        });
+
+        // Initialize with saved time range or default
+        const savedTimeRange = localStorage.getItem('selectedTimeRange') || 'Last 6 months';
+        document.getElementById('timeRange').value = savedTimeRange;
+        if (savedTimeRange !== 'Last 6 months') {
+            updateChartData(savedTimeRange);
+        }
+
+        // Keyboard navigation for chart
+        document.getElementById('trafficChart').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const table = document.getElementById('chartDataTable');
+                if (table.style.display === 'none') {
+                    toggleDataTable();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
